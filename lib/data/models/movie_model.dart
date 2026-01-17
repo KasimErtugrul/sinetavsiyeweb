@@ -3,7 +3,7 @@ import '../../domain/entities/movie_entity.dart';
 class MovieModel extends MovieEntity {
   const MovieModel({
     required super.id,
-    required super.title,
+     super.title,
     super.originalTitle,
     super.overview,
     super.tagline,
@@ -18,7 +18,7 @@ class MovieModel extends MovieEntity {
     super.platformRatingCount,
     super.category,
     super.adminNote,
-    required super.createdAt,
+     super.createdAt,
     super.categoryId,
     super.categoryName,
     super.categorySlug,
@@ -66,7 +66,7 @@ class MovieModel extends MovieEntity {
             })
           : null,
       adminNote: json['admin_note'] as String?,
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: json['createdAt'] !=null ? DateTime.parse(json['created_at']) : null,
       categoryId: json['category_id'] as int?,
       categoryName: json['category_name'] as String?,
       categorySlug: json['category_slug'] as String?,
@@ -97,7 +97,7 @@ class MovieModel extends MovieEntity {
       'tmdb_vote_count': tmdbVoteCount,
       'platform_rating': platformRating,
       'platform_rating_count': platformRatingCount,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt!.toIso8601String(),
     };
   }
 }

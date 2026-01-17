@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import '../../core/utils/logger.dart';
 import '../../data/repositories/movie_repository.dart';
 import '../../domain/entities/movie_entity.dart';
@@ -8,9 +11,15 @@ enum HomeViewState { initial, loading, success, error }
 class HomeController extends GetxController {
   final MovieRepository _movieRepository = MovieRepository();
 
+  // Scroll Controller for lazy loading
+  final ScrollController scrollController = ScrollController();
+
   // State
   final _viewState = HomeViewState.initial.obs;
   final _errorMessage = ''.obs;
+  final _isLoadingMore = false.obs;
+  final _hasMoreData = true.obs;
+  final _currentPage = 1.obs;
 
   // Data
   final _trendingMovies = <MovieEntity>[].obs;
@@ -25,6 +34,8 @@ class HomeController extends GetxController {
   // Getters
   HomeViewState get viewState => _viewState.value;
   String get errorMessage => _errorMessage.value;
+  bool get isLoadingMore => _isLoadingMore.value;
+  bool get hasMoreData => _hasMoreData.value;
   List<MovieEntity> get trendingMovies => _trendingMovies;
   List<MovieEntity> get popularMovies => _popularMovies;
   List<MovieEntity> get mostCommentedMovies => _mostCommentedMovies;
@@ -38,6 +49,56 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     loadHomeData();
+    _setupScrollListener();
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  void _setupScrollListener() {
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.8) {
+        if (!_isLoadingMore.value && _hasMoreData.value) {
+          _loadMoreData();
+        }
+      }
+    });
+  }
+
+  Future<void> _loadMoreData() async {
+    if (_isLoadingMore.value || !_hasMoreData.value) return;
+
+    try {
+      _isLoadingMore.value = true;
+      _currentPage.value++;
+      
+      final offset = (_currentPage.value - 1) * 20;
+      
+      final result = await _movieRepository.getPopularMovies(limit: 20, offset: offset);
+      
+      result.fold(
+        (failure) {
+          AppLogger.error('Failed to load more movies: ${failure.message}');
+          _currentPage.value--;
+        },
+        (movies) {
+          if (movies.isEmpty) {
+            _hasMoreData.value = false;
+          } else {
+            _popularMovies.addAll(movies);
+            AppLogger.info('Loaded ${movies.length} more movies');
+          }
+        },
+      );
+    } catch (e) {
+      AppLogger.error('Failed to load more data', e);
+      _currentPage.value--;
+    } finally {
+      _isLoadingMore.value = false;
+    }
   }
 
   Future<void> loadHomeData() async {
@@ -95,6 +156,7 @@ class HomeController extends GetxController {
           AppLogger.error('Failed to load most viewed movies: ${failure.message}');
         },
         (movies) {
+          log('Most viewed movies count: $movies');
           _mostViewedMovies.value = movies;
           AppLogger.info('Loaded ${movies.length} most viewed movies');
         },

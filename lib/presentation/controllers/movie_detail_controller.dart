@@ -33,12 +33,27 @@ class MovieDetailController extends GetxController {
           _movie.value = movie;
           AppLogger.info('Loaded movie: ${movie.title}');
           _viewState.value = MovieDetailViewState.success;
+
+          // Film başarıyla yüklendi → view count artır
+          _recordView(movieId);
         },
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load movie detail', e, stackTrace);
       _errorMessage.value = 'Film detayları yüklenirken bir hata oluştu';
       _viewState.value = MovieDetailViewState.error;
+    }
+  }
+
+  /// Film görüntülendiğinde view count'u artırır (sessiz işlem)
+  Future<void> _recordView(int movieId) async {
+    try {
+      AppLogger.info('Recording view for movie: $movieId');
+      await _movieRepository.recordMovieView(movieId);
+      AppLogger.info('View recorded successfully for movie: $movieId');
+    } catch (e) {
+      // View kaydetme hatası kritik değil → sadece logla, kullanıcıya gösterme
+      AppLogger.warning('Failed to record view for movie $movieId: $e');
     }
   }
 
@@ -53,6 +68,8 @@ class MovieDetailController extends GetxController {
         },
         (_) {
           Get.snackbar('Başarılı', 'İzleme listesi güncellendi');
+          // Opsiyonel: watchlist değiştiğinde detayları yenile
+          // loadMovieDetail(movie!.id);
         },
       );
     } catch (e) {
@@ -70,6 +87,7 @@ class MovieDetailController extends GetxController {
           Get.snackbar('Hata', failure.message);
         },
         (_) {
+          // Like değişti → detayları yenile (istatistikler güncellenir)
           loadMovieDetail(movie!.id);
         },
       );

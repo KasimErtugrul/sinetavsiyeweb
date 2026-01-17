@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../controllers/home_controller.dart';
@@ -47,6 +48,7 @@ class HomePage extends GetView<HomeController> {
               final isMobile = ResponsiveHelper.isMobile(context);
               
               return CustomScrollView(
+                controller: controller.scrollController,
                 slivers: [
                   _buildAppBar(context),
                   SliverToBoxAdapter(child: SizedBox(height: isMobile ? 20.h : 20)),
@@ -87,6 +89,40 @@ class HomePage extends GetView<HomeController> {
                   
                   // Categories Sections
                   ..._buildCategorySections(context),
+                  
+                  // Loading More Indicator
+                  SliverToBoxAdapter(
+                    child: Obx(() {
+                      if (controller.isLoadingMore) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(vertical: 20.h),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Text(
+                                'Daha fazla yükleniyor...',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                  ),
                   
                   SliverToBoxAdapter(child: SizedBox(height: isMobile ? 40.h : 80)),
                 ],
@@ -234,178 +270,186 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  // Hero Section - Featured/Trending
+  // Hero Section - Featured/Trending (Carousel)
   Widget _buildHeroSection(BuildContext context) {
-    final movie = controller.trendingMovies.first;
+    final isMobile = ResponsiveHelper.isMobile(context);
     
     return SliverToBoxAdapter(
       child: FadeIn(
         duration: const Duration(milliseconds: 800),
-        child: Container(
-          height: 500.h,
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Stack(
-            children: [
-              // Backdrop Image
-              ClipRRect(
+        child: CarouselSlider.builder(
+          itemCount: controller.trendingMovies.length,
+          options: CarouselOptions(
+            height: isMobile ? 400.h : 600,
+            viewportFraction: isMobile ? 0.9 : 0.85,
+            enlargeCenterPage: true,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 5),
+            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+            autoPlayCurve: Curves.fastOutSlowIn,
+          ),
+          itemBuilder: (context, index, realIndex) {
+            final movie = controller.trendingMovies[index];
+            
+            return Container(
+              margin: EdgeInsets.symmetric(horizontal: 8.w),
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(24.r),
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(movie.fullBackdropUrl),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                          Colors.black.withOpacity(0.95),
-                        ],
-                        stops: const [0.0, 0.6, 1.0],
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(movie.fullBackdropUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                              Colors.black.withOpacity(0.95),
+                            ],
+                            stops: const [0.0, 0.6, 1.0],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-              
-              // Content
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Padding(
-                  padding: EdgeInsets.all(24.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Trending Badge
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 6.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(20.r),
-                        ),
-                        child: Row(
+                    
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Padding(
+                        padding: EdgeInsets.all(24.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.trending_up,
-                              size: 16.sp,
-                              color: Colors.white,
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 6.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor,
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.trending_up,
+                                    size: 16.sp,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    'TREND #${index + 1}',
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            SizedBox(width: 6.w),
+                            SizedBox(height: 16.h),
+                            
                             Text(
-                              'TREND',
+                              movie.title ?? 'Başlıksız',
                               style: TextStyle(
-                                fontSize: 12.sp,
+                                fontSize: isMobile ? 24.sp : 32,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
+                                height: 1.2,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 12.h),
+                            
+                            Row(
+                              children: [
+                                StatBadge(
+                                  icon: Icons.star,
+                                  value: movie.platformRating?.toStringAsFixed(1) ?? 'N/A',
+                                  color: AppTheme.secondaryColor,
+                                ),
+                                SizedBox(width: 16.w),
+                                StatBadge(
+                                  icon: Icons.calendar_today,
+                                  value: movie.releaseYear,
+                                  color: AppTheme.textSecondary,
+                                ),
+                                if (movie.runtime != null) ...[
+                                  SizedBox(width: 16.w),
+                                  StatBadge(
+                                    icon: Icons.access_time,
+                                    value: '${movie.runtime}dk',
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ],
+                              ],
+                            ),
+                            SizedBox(height: 16.h),
+                            
+                            if (movie.overview != null && !isMobile)
+                              Text(
+                                movie.overview!,
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppTheme.textSecondary,
+                                  height: 1.5,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            if (!isMobile) SizedBox(height: 20.h),
+                            
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Get.toNamed('/movie/${movie.id}');
+                                    },
+                                    icon: Icon(Icons.play_arrow, size: 24.sp),
+                                    label: const Text('Detaylar'),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(vertical: isMobile ? 12.h : 14),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 12.w),
+                                OutlinedButton(
+                                  onPressed: () {
+                                    // TODO: Add to list
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.all(isMobile ? 12.w : 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                  ),
+                                  child: Icon(Icons.add, size: 24.sp),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 16.h),
-                      
-                      // Title
-                      Text(
-                        movie.title,
-                        style: TextStyle(
-                          fontSize: 32.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 12.h),
-                      
-                      // Meta Info
-                      Row(
-                        children: [
-                          StatBadge(
-                            icon: Icons.star,
-                            value: movie.platformRating?.toStringAsFixed(1) ?? 'N/A',
-                            color: AppTheme.secondaryColor,
-                          ),
-                          SizedBox(width: 16.w),
-                          StatBadge(
-                            icon: Icons.calendar_today,
-                            value: movie.releaseYear,
-                            color: AppTheme.textSecondary,
-                          ),
-                          if (movie.runtime != null) ...[
-                            SizedBox(width: 16.w),
-                            StatBadge(
-                              icon: Icons.access_time,
-                              value: '${movie.runtime}dk',
-                              color: AppTheme.textSecondary,
-                            ),
-                          ],
-                        ],
-                      ),
-                      SizedBox(height: 16.h),
-                      
-                      // Overview
-                      if (movie.overview != null)
-                        Text(
-                          movie.overview!,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: AppTheme.textSecondary,
-                            height: 1.5,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      SizedBox(height: 20.h),
-                      
-                      // Actions
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                // TODO: Navigate to detail
-                              },
-                              icon: Icon(Icons.play_arrow, size: 24.sp),
-                              label: const Text('Detaylar'),
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          OutlinedButton(
-                            onPressed: () {
-                              // TODO: Add to list
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.all(14.w),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                            child: Icon(Icons.add, size: 24.sp),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -437,7 +481,7 @@ class HomePage extends GetView<HomeController> {
                     duration: Duration(milliseconds: 400 + (index * 100)),
                     child: MovieCard(
                       posterPath: movie.fullPosterUrl,
-                      title: movie.title,
+                      title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       onTap: () {
@@ -481,7 +525,7 @@ class HomePage extends GetView<HomeController> {
                     duration: Duration(milliseconds: 400 + (index * 100)),
                     child: MovieCard(
                       posterPath: movie.fullPosterUrl,
-                      title: movie.title,
+                      title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       badge: '${movie.commentCount} yorum',
@@ -526,7 +570,7 @@ class HomePage extends GetView<HomeController> {
                     duration: Duration(milliseconds: 400 + (index * 100)),
                     child: MovieCard(
                       posterPath: movie.fullPosterUrl,
-                      title: movie.title,
+                      title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       onTap: () {
@@ -570,7 +614,7 @@ class HomePage extends GetView<HomeController> {
                     duration: Duration(milliseconds: 400 + (index * 100)),
                     child: MovieCard(
                       posterPath: movie.fullPosterUrl,
-                      title: movie.title,
+                      title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       badge: '${movie.viewCount} görüntüleme',
@@ -615,7 +659,7 @@ class HomePage extends GetView<HomeController> {
                     duration: Duration(milliseconds: 400 + (index * 100)),
                     child: MovieCard(
                       posterPath: movie.fullPosterUrl,
-                      title: movie.title,
+                      title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       onTap: () {
@@ -668,7 +712,7 @@ class HomePage extends GetView<HomeController> {
                       final movie = movies[index];
                       return MovieCard(
                         posterPath: movie.fullPosterUrl,
-                        title: movie.title,
+                        title: movie.title ?? 'Başlıksız',
                         year: movie.releaseYear,
                         rating: movie.platformRating,
                         onTap: () {

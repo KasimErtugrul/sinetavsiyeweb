@@ -1,24 +1,25 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
 // Movie Entity
 class MovieEntity extends Equatable {
-  final int id;
-  final String title;
-  final String? originalTitle;
+  final int id;// var
+  final String? title; // var
+  final String? originalTitle; // null
   final String? overview;
   final String? tagline;
   final String? posterPath;
   final String? backdropPath;
   final DateTime? releaseDate;
   final int? runtime;
-  final List<String> genres;
+  final List<String>? genres;
   final double? tmdbVoteAverage;
   final int? tmdbVoteCount;
   final double? platformRating;
-  final int platformRatingCount;
+  final int? platformRatingCount;
   final CategoryEntity? category;
   final String? adminNote;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   
   // Flattened category fields (from view)
   final int? categoryId;
@@ -28,12 +29,12 @@ class MovieEntity extends Equatable {
   final String? categoryColor;
   
   // Stats
-  final int viewCount;
-  final int commentCount;
-  final int likeCount;
-  final int dislikeCount;
-  final int listCount;
-  final int watchlistCount;
+  final int? viewCount;
+  final int? commentCount;
+  final int? likeCount;
+  final int? dislikeCount;
+  final int? listCount;
+  final int? watchlistCount;
 
   const MovieEntity({
     required this.id,
@@ -82,6 +83,9 @@ class MovieEntity extends Equatable {
     releaseDate, runtime, genres, tmdbVoteAverage, platformRating,
     category, createdAt, categoryId, categoryName,
   ];
+
+  @override
+  bool get stringify => true;
 }
 
 // Profile Entity

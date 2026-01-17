@@ -49,6 +49,7 @@ dependencies:
   uuid: ^4.5.2
   animate_do: ^4.2.0
   lottie: ^3.3.2
+  carousel_slider_plus: ^7.1.1
   
 
 dev_dependencies:
