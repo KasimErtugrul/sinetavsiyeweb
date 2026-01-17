@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/common_widgets.dart';
 
@@ -14,7 +15,7 @@ class HomePage extends GetView<HomeController> {
     return Scaffold(
       body: Obx(() {
         if (controller.viewState == HomeViewState.loading) {
-          return _buildLoadingState();
+          return _buildLoadingState(context);
         }
 
         if (controller.viewState == HomeViewState.error) {
@@ -34,56 +35,62 @@ class HomePage extends GetView<HomeController> {
             controller.categories.isNotEmpty;
 
         if (!hasData) {
-          return _buildEmptyState();
+          return _buildEmptyState(context);
         }
 
         return RefreshIndicator(
           onRefresh: controller.refresh,
           color: AppTheme.primaryColor,
-          child: CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = ResponsiveHelper.isMobile(context);
               
-              // Hero Section - Trending Movies
-              if (controller.trendingMovies.isNotEmpty)
-                _buildHeroSection(),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
-              
-              // Popular Movies Section
-              if (controller.popularMovies.isNotEmpty)
-                _buildPopularSection(),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
-              
-              // Most Commented Movies Section
-              if (controller.mostCommentedMovies.isNotEmpty)
-                _buildMostCommentedSection(),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
-              
-              // Top Rated Movies Section
-              if (controller.topRatedMovies.isNotEmpty)
-                _buildTopRatedSection(),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
-              
-              // Most Viewed Movies Section
-              if (controller.mostViewedMovies.isNotEmpty)
-                _buildMostViewedSection(),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
-              
-              // Controversial Movies Section
-              if (controller.controversialMovies.isNotEmpty)
-                _buildControversialSection(),
-              
-              // Categories Sections
-              ..._buildCategorySections(),
-              
-              SliverToBoxAdapter(child: SizedBox(height: 40.h)),
-            ],
+              return CustomScrollView(
+                slivers: [
+                  _buildAppBar(context),
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 20.h : 20)),
+                  
+                  // Hero Section - Trending Movies
+                  if (controller.trendingMovies.isNotEmpty)
+                    _buildHeroSection(context),
+                  
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
+                  
+                  // Popular Movies Section
+                  if (controller.popularMovies.isNotEmpty)
+                    _buildPopularSection(context),
+                  
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
+                  
+                  // Most Commented Movies Section
+                  if (controller.mostCommentedMovies.isNotEmpty)
+                    _buildMostCommentedSection(context),
+                  
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
+                  
+                  // Top Rated Movies Section
+                  if (controller.topRatedMovies.isNotEmpty)
+                    _buildTopRatedSection(context),
+                  
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
+                  
+                  // Most Viewed Movies Section
+                  if (controller.mostViewedMovies.isNotEmpty)
+                    _buildMostViewedSection(context),
+                  
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
+                  
+                  // Controversial Movies Section
+                  if (controller.controversialMovies.isNotEmpty)
+                    _buildControversialSection(context),
+                  
+                  // Categories Sections
+                  ..._buildCategorySections(context),
+                  
+                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 40.h : 80)),
+                ],
+              );
+            },
           ),
         );
       }),
@@ -91,10 +98,10 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Empty State
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        _buildAppBar(),
+        _buildAppBar(context),
         SliverFillRemaining(
           child: EmptyState(
             title: 'Henüz Film Yok',
@@ -109,7 +116,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // App Bar
-  Widget _buildAppBar() {
+  Widget _buildAppBar(BuildContext context) {
     return SliverAppBar(
       floating: true,
       snap: true,
@@ -170,7 +177,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Hero Section - Featured/Trending
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(BuildContext context) {
     final movie = controller.trendingMovies.first;
     
     return SliverToBoxAdapter(
@@ -347,7 +354,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Popular Movies Section
-  Widget _buildPopularSection() {
+  Widget _buildPopularSection(BuildContext context) {
     return SliverToBoxAdapter(
       child: FadeInUp(
         duration: const Duration(milliseconds: 600),
@@ -376,7 +383,7 @@ class HomePage extends GetView<HomeController> {
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       onTap: () {
-                        // TODO: Navigate to detail
+                        Get.toNamed('/movie/${movie.id}');
                       },
                     ),
                   );
@@ -390,7 +397,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Most Commented Movies Section
-  Widget _buildMostCommentedSection() {
+  Widget _buildMostCommentedSection(BuildContext context) {
     return SliverToBoxAdapter(
       child: FadeInUp(
         duration: const Duration(milliseconds: 600),
@@ -421,7 +428,7 @@ class HomePage extends GetView<HomeController> {
                       rating: movie.platformRating,
                       badge: '${movie.commentCount} yorum',
                       onTap: () {
-                        // TODO: Navigate to detail
+                        Get.toNamed('/movie/${movie.id}');
                       },
                     ),
                   );
@@ -435,7 +442,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Top Rated Movies Section
-  Widget _buildTopRatedSection() {
+  Widget _buildTopRatedSection(BuildContext context) {
     return SliverToBoxAdapter(
       child: FadeInUp(
         duration: const Duration(milliseconds: 600),
@@ -465,7 +472,7 @@ class HomePage extends GetView<HomeController> {
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       onTap: () {
-                        // TODO: Navigate to detail
+                        Get.toNamed('/movie/${movie.id}');
                       },
                     ),
                   );
@@ -479,7 +486,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Most Viewed Movies Section
-  Widget _buildMostViewedSection() {
+  Widget _buildMostViewedSection(BuildContext context) {
     return SliverToBoxAdapter(
       child: FadeInUp(
         duration: const Duration(milliseconds: 600),
@@ -510,7 +517,7 @@ class HomePage extends GetView<HomeController> {
                       rating: movie.platformRating,
                       badge: '${movie.viewCount} görüntüleme',
                       onTap: () {
-                        // TODO: Navigate to detail
+                        Get.toNamed('/movie/${movie.id}');
                       },
                     ),
                   );
@@ -524,7 +531,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Controversial Movies Section
-  Widget _buildControversialSection() {
+  Widget _buildControversialSection(BuildContext context) {
     return SliverToBoxAdapter(
       child: FadeInUp(
         duration: const Duration(milliseconds: 600),
@@ -554,7 +561,7 @@ class HomePage extends GetView<HomeController> {
                       year: movie.releaseYear,
                       rating: movie.platformRating,
                       onTap: () {
-                        // TODO: Navigate to detail
+                        Get.toNamed('/movie/${movie.id}');
                       },
                     ),
                   );
@@ -568,8 +575,9 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Category Sections
-  List<Widget> _buildCategorySections() {
+  List<Widget> _buildCategorySections(BuildContext context) {
     final widgets = <Widget>[];
+    final isMobile = ResponsiveHelper.isMobile(context);
     
     for (var i = 0; i < controller.categories.length; i++) {
       final category = controller.categories[i];
@@ -584,7 +592,7 @@ class HomePage extends GetView<HomeController> {
             delay: Duration(milliseconds: i * 100),
             child: Column(
               children: [
-                SizedBox(height: 32.h),
+                SizedBox(height: isMobile ? 32.h : 48),
                 SectionHeader(
                   title: category.name,
                   subtitle: category.description,
@@ -593,9 +601,9 @@ class HomePage extends GetView<HomeController> {
                   },
                 ),
                 SizedBox(
-                  height: 280.h,
+                  height: isMobile ? 280.h : 320,
                   child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 20.w : 64),
                     scrollDirection: Axis.horizontal,
                     itemCount: movies.length,
                     itemBuilder: (context, index) {
@@ -606,7 +614,7 @@ class HomePage extends GetView<HomeController> {
                         year: movie.releaseYear,
                         rating: movie.platformRating,
                         onTap: () {
-                          // TODO: Navigate to detail
+                          Get.toNamed('/movie/${movie.id}');
                         },
                       );
                     },
@@ -623,7 +631,7 @@ class HomePage extends GetView<HomeController> {
   }
 
   // Loading State
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return CustomScrollView(
       slivers: [
         SliverAppBar(

@@ -5,7 +5,9 @@ import 'core/network/supabase_client.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
 import 'presentation/controllers/home_controller.dart';
+import 'presentation/controllers/movie_detail_controller.dart';
 import 'presentation/pages/home_page.dart';
+import 'presentation/pages/movie_detail_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +58,18 @@ class MyApp extends StatelessWidget {
                 Get.put(HomeController());
               }),
             ),
+            GetPage(
+              name: '/movie/:id',
+              page: () {
+                final id = int.parse(Get.parameters['id'] ?? '0');
+                return MovieDetailPage(movieId: id);
+              },
+              binding: BindingsBuilder(() {
+                final controller = Get.put(MovieDetailController());
+                final id = int.parse(Get.parameters['id'] ?? '0');
+                controller.loadMovieDetail(id);
+              }),
+            ),
           ],
           
           // Responsive breakpoints
@@ -68,32 +82,5 @@ class MyApp extends StatelessWidget {
         );
       },
     );
-  }
-}
-
-// Responsive Helper
-class ResponsiveHelper {
-  static bool isMobile(BuildContext context) {
-    return MediaQuery.of(context).size.width < 600;
-  }
-  
-  static bool isTablet(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    return width >= 600 && width < 900;
-  }
-  
-  static bool isDesktop(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 900;
-  }
-  
-  static double getResponsiveValue(
-    BuildContext context, {
-    required double mobile,
-    required double tablet,
-    required double desktop,
-  }) {
-    if (isMobile(context)) return mobile;
-    if (isTablet(context)) return tablet;
-    return desktop;
   }
 }
