@@ -226,6 +226,7 @@ class CategoryEntity extends Equatable {
   List<Object?> get props => [id, name, slug, description, colorHex, createdAt];
 }
 
+
 // Notification Entity
 class NotificationEntity extends Equatable {
   final int id;

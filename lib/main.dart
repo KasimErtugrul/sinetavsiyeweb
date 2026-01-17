@@ -4,10 +4,15 @@ import 'package:get/get.dart';
 import 'core/network/supabase_client.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
+import 'presentation/controllers/auth_controller.dart';
 import 'presentation/controllers/home_controller.dart';
 import 'presentation/controllers/movie_detail_controller.dart';
+import 'presentation/controllers/profile_controller.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/movie_detail_page.dart';
+import 'presentation/pages/auth/login_page.dart';
+import 'presentation/pages/auth/signup_page.dart';
+import 'presentation/pages/profile_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +26,9 @@ void main() async {
   }
   
   runApp(const MyApp());
+  
+  // Initialize Global Auth Controller
+  Get.put(AuthController(), permanent: true);
 }
 
 class MyApp extends StatelessWidget {
@@ -68,6 +76,21 @@ class MyApp extends StatelessWidget {
                 final controller = Get.put(MovieDetailController());
                 final id = int.parse(Get.parameters['id'] ?? '0');
                 controller.loadMovieDetail(id);
+              }),
+            ),
+            GetPage(
+              name: '/auth/login',
+              page: () => const LoginPage(),
+            ),
+            GetPage(
+              name: '/auth/signup',
+              page: () => const SignupPage(),
+            ),
+            GetPage(
+              name: '/profile',
+              page: () => const ProfilePage(),
+              binding: BindingsBuilder(() {
+                Get.put(ProfileController());
               }),
             ),
           ],

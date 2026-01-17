@@ -5,6 +5,7 @@ import 'package:animate_do/animate_do.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../controllers/movie_detail_controller.dart';
+import '../controllers/auth_controller.dart';
 import '../widgets/common_widgets.dart';
 
 class MovieDetailPage extends GetView<MovieDetailController> {
@@ -155,6 +156,7 @@ class MovieDetailPage extends GetView<MovieDetailController> {
 
   Widget _buildAppBar(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
+    final authController = Get.find<AuthController>();
     
     return SliverAppBar(
       floating: true,
@@ -179,7 +181,11 @@ class MovieDetailPage extends GetView<MovieDetailController> {
         ),
         IconButton(
           icon: const Icon(Icons.bookmark_border),
-          onPressed: controller.toggleWatchlist,
+          onPressed: () {
+            if (authController.requireAuth()) {
+              controller.toggleWatchlist();
+            }
+          },
         ),
         SizedBox(width: isMobile ? 8.w : 16),
       ],
@@ -652,13 +658,19 @@ class MovieDetailPage extends GetView<MovieDetailController> {
   }
 
   Widget _buildActionButtons(BuildContext context, movie) {
+    final authController = Get.find<AuthController>();
+    
     return FadeInUp(
       delay: const Duration(milliseconds: 300),
       child: Row(
         children: [
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () => controller.toggleLike(true),
+              onPressed: () {
+                if (authController.requireAuth()) {
+                  controller.toggleLike(true);
+                }
+              },
               icon: const Icon(Icons.thumb_up),
               label: const Text('Beğen'),
               style: ElevatedButton.styleFrom(
@@ -669,7 +681,11 @@ class MovieDetailPage extends GetView<MovieDetailController> {
           const SizedBox(width: 16),
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () => controller.toggleLike(false),
+              onPressed: () {
+                if (authController.requireAuth()) {
+                  controller.toggleLike(false);
+                }
+              },
               icon: const Icon(Icons.thumb_down),
               label: const Text('Beğenme'),
               style: OutlinedButton.styleFrom(

@@ -5,6 +5,7 @@ import 'package:animate_do/animate_do.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../controllers/home_controller.dart';
+import '../controllers/auth_controller.dart';
 import '../widgets/common_widgets.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -117,6 +118,8 @@ class HomePage extends GetView<HomeController> {
 
   // App Bar
   Widget _buildAppBar(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    
     return SliverAppBar(
       floating: true,
       snap: true,
@@ -170,6 +173,61 @@ class HomePage extends GetView<HomeController> {
               // TODO: Navigate to notifications
             },
           ),
+        ),
+        // User Profile / Login Button
+        FadeInDown(
+          duration: const Duration(milliseconds: 600),
+          delay: const Duration(milliseconds: 300),
+          child: Obx(() {
+            if (authController.isAuthenticated) {
+              // User is logged in - Show profile avatar
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: InkWell(
+                  onTap: () {
+                    Get.toNamed('/profile');
+                  },
+                  borderRadius: BorderRadius.circular(20.r),
+                  child: Container(
+                    padding: EdgeInsets.all(2.w),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: CircleAvatar(
+                      radius: 18.r,
+                      backgroundColor: AppTheme.darkCard,
+                      backgroundImage: authController.currentUser?.userMetadata?['avatar_url'] != null
+                          ? NetworkImage(authController.currentUser!.userMetadata!['avatar_url'])
+                          : null,
+                      child: authController.currentUser?.userMetadata?['avatar_url'] == null
+                          ? Icon(Icons.person, size: 20.sp, color: AppTheme.textSecondary)
+                          : null,
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              // User not logged in - Show login button
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: TextButton.icon(
+                  onPressed: () {
+                    Get.toNamed('/auth/login');
+                  },
+                  icon: Icon(Icons.login, size: 20.sp),
+                  label: Text(
+                    'Giriş',
+                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  ),
+                ),
+              );
+            }
+          }),
         ),
         SizedBox(width: 8.w),
       ],
