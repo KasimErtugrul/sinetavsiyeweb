@@ -1,0 +1,666 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:animate_do/animate_do.dart';
+import '../../core/theme/app_theme.dart';
+import '../controllers/home_controller.dart';
+import '../widgets/common_widgets.dart';
+
+class HomePage extends GetView<HomeController> {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Obx(() {
+        if (controller.viewState == HomeViewState.loading) {
+          return _buildLoadingState();
+        }
+
+        if (controller.viewState == HomeViewState.error) {
+          return ErrorState(
+            message: controller.errorMessage,
+            onRetry: controller.loadHomeData,
+          );
+        }
+
+        // Check if all data is empty
+        final hasData = controller.trendingMovies.isNotEmpty ||
+            controller.popularMovies.isNotEmpty ||
+            controller.mostCommentedMovies.isNotEmpty ||
+            controller.mostViewedMovies.isNotEmpty ||
+            controller.topRatedMovies.isNotEmpty ||
+            controller.controversialMovies.isNotEmpty ||
+            controller.categories.isNotEmpty;
+
+        if (!hasData) {
+          return _buildEmptyState();
+        }
+
+        return RefreshIndicator(
+          onRefresh: controller.refresh,
+          color: AppTheme.primaryColor,
+          child: CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+              
+              // Hero Section - Trending Movies
+              if (controller.trendingMovies.isNotEmpty)
+                _buildHeroSection(),
+              
+              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+              
+              // Popular Movies Section
+              if (controller.popularMovies.isNotEmpty)
+                _buildPopularSection(),
+              
+              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+              
+              // Most Commented Movies Section
+              if (controller.mostCommentedMovies.isNotEmpty)
+                _buildMostCommentedSection(),
+              
+              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+              
+              // Top Rated Movies Section
+              if (controller.topRatedMovies.isNotEmpty)
+                _buildTopRatedSection(),
+              
+              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+              
+              // Most Viewed Movies Section
+              if (controller.mostViewedMovies.isNotEmpty)
+                _buildMostViewedSection(),
+              
+              SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+              
+              // Controversial Movies Section
+              if (controller.controversialMovies.isNotEmpty)
+                _buildControversialSection(),
+              
+              // Categories Sections
+              ..._buildCategorySections(),
+              
+              SliverToBoxAdapter(child: SizedBox(height: 40.h)),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  // Empty State
+  Widget _buildEmptyState() {
+    return CustomScrollView(
+      slivers: [
+        _buildAppBar(),
+        SliverFillRemaining(
+          child: EmptyState(
+            title: 'Henüz Film Yok',
+            message: 'Veritabanınıza film ekleyerek başlayın',
+            icon: Icons.movie_filter_outlined,
+            onAction: controller.refresh,
+            actionLabel: 'Yenile',
+          ),
+        ),
+      ],
+    );
+  }
+
+  // App Bar
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      backgroundColor: AppTheme.darkBackground.withOpacity(0.95),
+      elevation: 0,
+      title: FadeInDown(
+        duration: const Duration(milliseconds: 600),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                Icons.local_movies,
+                color: Colors.white,
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Text(
+              'CineHub',
+              style: TextStyle(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        FadeInDown(
+          duration: const Duration(milliseconds: 600),
+          delay: const Duration(milliseconds: 100),
+          child: IconButton(
+            icon: Icon(Icons.search, size: 24.sp),
+            onPressed: () {
+              // TODO: Navigate to search
+            },
+          ),
+        ),
+        FadeInDown(
+          duration: const Duration(milliseconds: 600),
+          delay: const Duration(milliseconds: 200),
+          child: IconButton(
+            icon: Icon(Icons.notifications_outlined, size: 24.sp),
+            onPressed: () {
+              // TODO: Navigate to notifications
+            },
+          ),
+        ),
+        SizedBox(width: 8.w),
+      ],
+    );
+  }
+
+  // Hero Section - Featured/Trending
+  Widget _buildHeroSection() {
+    final movie = controller.trendingMovies.first;
+    
+    return SliverToBoxAdapter(
+      child: FadeIn(
+        duration: const Duration(milliseconds: 800),
+        child: Container(
+          height: 500.h,
+          margin: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Stack(
+            children: [
+              // Backdrop Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24.r),
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(movie.fullBackdropUrl),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                          Colors.black.withOpacity(0.95),
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Content
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: EdgeInsets.all(24.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Trending Badge
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.trending_up,
+                              size: 16.sp,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 6.w),
+                            Text(
+                              'TREND',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      
+                      // Title
+                      Text(
+                        movie.title,
+                        style: TextStyle(
+                          fontSize: 32.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 12.h),
+                      
+                      // Meta Info
+                      Row(
+                        children: [
+                          StatBadge(
+                            icon: Icons.star,
+                            value: movie.platformRating?.toStringAsFixed(1) ?? 'N/A',
+                            color: AppTheme.secondaryColor,
+                          ),
+                          SizedBox(width: 16.w),
+                          StatBadge(
+                            icon: Icons.calendar_today,
+                            value: movie.releaseYear,
+                            color: AppTheme.textSecondary,
+                          ),
+                          if (movie.runtime != null) ...[
+                            SizedBox(width: 16.w),
+                            StatBadge(
+                              icon: Icons.access_time,
+                              value: '${movie.runtime}dk',
+                              color: AppTheme.textSecondary,
+                            ),
+                          ],
+                        ],
+                      ),
+                      SizedBox(height: 16.h),
+                      
+                      // Overview
+                      if (movie.overview != null)
+                        Text(
+                          movie.overview!,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: AppTheme.textSecondary,
+                            height: 1.5,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      SizedBox(height: 20.h),
+                      
+                      // Actions
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Navigate to detail
+                              },
+                              icon: Icon(Icons.play_arrow, size: 24.sp),
+                              label: const Text('Detaylar'),
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          OutlinedButton(
+                            onPressed: () {
+                              // TODO: Add to list
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.all(14.w),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                            ),
+                            child: Icon(Icons.add, size: 24.sp),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Popular Movies Section
+  Widget _buildPopularSection() {
+    return SliverToBoxAdapter(
+      child: FadeInUp(
+        duration: const Duration(milliseconds: 600),
+        child: Column(
+          children: [
+            SectionHeader(
+              title: 'Popüler Filmler',
+              subtitle: 'En çok beğenilen filmler',
+              onViewAll: () {
+                // TODO: Navigate to all popular
+              },
+            ),
+            SizedBox(
+              height: 280.h,
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.popularMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = controller.popularMovies[index];
+                  return FadeInRight(
+                    duration: Duration(milliseconds: 400 + (index * 100)),
+                    child: MovieCard(
+                      posterPath: movie.fullPosterUrl,
+                      title: movie.title,
+                      year: movie.releaseYear,
+                      rating: movie.platformRating,
+                      onTap: () {
+                        // TODO: Navigate to detail
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Most Commented Movies Section
+  Widget _buildMostCommentedSection() {
+    return SliverToBoxAdapter(
+      child: FadeInUp(
+        duration: const Duration(milliseconds: 600),
+        child: Column(
+          children: [
+            SectionHeader(
+              title: 'En Çok Yorumlanan',
+              subtitle: 'Tartışılan filmler',
+              icon: Icons.comment_outlined,
+              onViewAll: () {
+                // TODO: Navigate to all most commented
+              },
+            ),
+            SizedBox(
+              height: 280.h,
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.mostCommentedMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = controller.mostCommentedMovies[index];
+                  return FadeInRight(
+                    duration: Duration(milliseconds: 400 + (index * 100)),
+                    child: MovieCard(
+                      posterPath: movie.fullPosterUrl,
+                      title: movie.title,
+                      year: movie.releaseYear,
+                      rating: movie.platformRating,
+                      badge: '${movie.commentCount} yorum',
+                      onTap: () {
+                        // TODO: Navigate to detail
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Top Rated Movies Section
+  Widget _buildTopRatedSection() {
+    return SliverToBoxAdapter(
+      child: FadeInUp(
+        duration: const Duration(milliseconds: 600),
+        child: Column(
+          children: [
+            SectionHeader(
+              title: 'En Yüksek Puanlı',
+              subtitle: 'IMDb favorileri',
+              icon: Icons.star,
+              onViewAll: () {
+                // TODO: Navigate to all top rated
+              },
+            ),
+            SizedBox(
+              height: 280.h,
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.topRatedMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = controller.topRatedMovies[index];
+                  return FadeInRight(
+                    duration: Duration(milliseconds: 400 + (index * 100)),
+                    child: MovieCard(
+                      posterPath: movie.fullPosterUrl,
+                      title: movie.title,
+                      year: movie.releaseYear,
+                      rating: movie.platformRating,
+                      onTap: () {
+                        // TODO: Navigate to detail
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Most Viewed Movies Section
+  Widget _buildMostViewedSection() {
+    return SliverToBoxAdapter(
+      child: FadeInUp(
+        duration: const Duration(milliseconds: 600),
+        child: Column(
+          children: [
+            SectionHeader(
+              title: 'En Çok İzlenen',
+              subtitle: 'Popüler tercihler',
+              icon: Icons.visibility_outlined,
+              onViewAll: () {
+                // TODO: Navigate to all most viewed
+              },
+            ),
+            SizedBox(
+              height: 280.h,
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.mostViewedMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = controller.mostViewedMovies[index];
+                  return FadeInRight(
+                    duration: Duration(milliseconds: 400 + (index * 100)),
+                    child: MovieCard(
+                      posterPath: movie.fullPosterUrl,
+                      title: movie.title,
+                      year: movie.releaseYear,
+                      rating: movie.platformRating,
+                      badge: '${movie.viewCount} görüntüleme',
+                      onTap: () {
+                        // TODO: Navigate to detail
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Controversial Movies Section
+  Widget _buildControversialSection() {
+    return SliverToBoxAdapter(
+      child: FadeInUp(
+        duration: const Duration(milliseconds: 600),
+        child: Column(
+          children: [
+            SectionHeader(
+              title: 'Tartışmalı Filmler',
+              subtitle: 'Fikir ayrılığı yaratan yapımlar',
+              icon: Icons.question_mark,
+              onViewAll: () {
+                // TODO: Navigate to all controversial
+              },
+            ),
+            SizedBox(
+              height: 280.h,
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.controversialMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = controller.controversialMovies[index];
+                  return FadeInRight(
+                    duration: Duration(milliseconds: 400 + (index * 100)),
+                    child: MovieCard(
+                      posterPath: movie.fullPosterUrl,
+                      title: movie.title,
+                      year: movie.releaseYear,
+                      rating: movie.platformRating,
+                      onTap: () {
+                        // TODO: Navigate to detail
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Category Sections
+  List<Widget> _buildCategorySections() {
+    final widgets = <Widget>[];
+    
+    for (var i = 0; i < controller.categories.length; i++) {
+      final category = controller.categories[i];
+      final movies = controller.moviesByCategory[category.id];
+      
+      if (movies == null || movies.isEmpty) continue;
+      
+      widgets.add(
+        SliverToBoxAdapter(
+          child: FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: Duration(milliseconds: i * 100),
+            child: Column(
+              children: [
+                SizedBox(height: 32.h),
+                SectionHeader(
+                  title: category.name,
+                  subtitle: category.description,
+                  onViewAll: () {
+                    // TODO: Navigate to category
+                  },
+                ),
+                SizedBox(
+                  height: 280.h,
+                  child: ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: movies.length,
+                    itemBuilder: (context, index) {
+                      final movie = movies[index];
+                      return MovieCard(
+                        posterPath: movie.fullPosterUrl,
+                        title: movie.title,
+                        year: movie.releaseYear,
+                        rating: movie.platformRating,
+                        onTap: () {
+                          // TODO: Navigate to detail
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return widgets;
+  }
+
+  // Loading State
+  Widget _buildLoadingState() {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          floating: true,
+          title: Text('CineHub'),
+        ),
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              SizedBox(height: 20.h),
+              // Hero shimmer
+              LoadingShimmer(
+                width: double.infinity,
+                height: 500.h,
+                borderRadius: 24.r,
+              ),
+              SizedBox(height: 32.h),
+              // Horizontal list shimmer
+              SizedBox(
+                height: 280.h,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  itemCount: 5,
+                  itemBuilder: (context, index) => Padding(
+                    padding: EdgeInsets.only(right: 12.w),
+                    child: LoadingShimmer(
+                      width: 140.w,
+                      height: 280.h,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
