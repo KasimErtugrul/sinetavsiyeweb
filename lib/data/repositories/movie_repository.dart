@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:dartz/dartz.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -99,7 +98,6 @@ class MovieRepository {
           .select('*')
           .order('popularity_score', ascending: false)
           .range(offset, offset + limit - 1);
-
       final movies = (response as List)
           .map((json) => MovieModel.fromJson(json) as MovieEntity)
           .toList();
@@ -148,7 +146,6 @@ class MovieRepository {
           .select('*')
           .limit(limit);
 
-      log('Most viewed response: $response');
 
       final movies = (response as List)
           .map((json) => MovieModel.fromJson(json) as MovieEntity)
@@ -286,7 +283,6 @@ class MovieRepository {
           .eq('is_active', true)
           .maybeSingle();
 
-      log('Response for movie $id: $response');
       // Handle null response
       if (response == null) {
         AppLogger.warning('Movie not found: $id');
@@ -379,7 +375,7 @@ class MovieRepository {
           .order('name');
 
       final categories = (response as List)
-          .map((json) => CategoryModel.fromJson(json) as CategoryEntity)
+          .map((json) => Category.fromJson(json) as CategoryEntity)
           .toList();
 
       AppLogger.info('Fetched ${categories.length} categories');

@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -156,7 +155,6 @@ class HomeController extends GetxController {
           AppLogger.error('Failed to load most viewed movies: ${failure.message}');
         },
         (movies) {
-          log('Most viewed movies count: $movies');
           _mostViewedMovies.value = movies;
           AppLogger.info('Loaded ${movies.length} most viewed movies');
         },

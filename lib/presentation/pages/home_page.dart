@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -28,7 +29,8 @@ class HomePage extends GetView<HomeController> {
         }
 
         // Check if all data is empty
-        final hasData = controller.trendingMovies.isNotEmpty ||
+        final hasData =
+            controller.trendingMovies.isNotEmpty ||
             controller.popularMovies.isNotEmpty ||
             controller.mostCommentedMovies.isNotEmpty ||
             controller.mostViewedMovies.isNotEmpty ||
@@ -46,50 +48,62 @@ class HomePage extends GetView<HomeController> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isMobile = ResponsiveHelper.isMobile(context);
-              
+
               return CustomScrollView(
                 controller: controller.scrollController,
                 slivers: [
                   _buildAppBar(context),
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 20.h : 20)),
-                  
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 20.h : 20),
+                  ),
+
                   // Hero Section - Trending Movies
                   if (controller.trendingMovies.isNotEmpty)
                     _buildHeroSection(context),
-                  
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
-                  
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 32.h : 48),
+                  ),
+
                   // Popular Movies Section
                   if (controller.popularMovies.isNotEmpty)
                     _buildPopularSection(context),
-                  
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
-                  
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 32.h : 48),
+                  ),
+
                   // Most Commented Movies Section
                   if (controller.mostCommentedMovies.isNotEmpty)
                     _buildMostCommentedSection(context),
-                  
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
-                  
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 32.h : 48),
+                  ),
+
                   // Top Rated Movies Section
                   if (controller.topRatedMovies.isNotEmpty)
                     _buildTopRatedSection(context),
-                  
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
-                  
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 32.h : 48),
+                  ),
+
                   // Most Viewed Movies Section
                   if (controller.mostViewedMovies.isNotEmpty)
                     _buildMostViewedSection(context),
-                  
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 32.h : 48)),
-                  
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 32.h : 48),
+                  ),
+
                   // Controversial Movies Section
                   if (controller.controversialMovies.isNotEmpty)
                     _buildControversialSection(context),
-                  
+
                   // Categories Sections
                   ..._buildCategorySections(context),
-                  
+
                   // Loading More Indicator
                   SliverToBoxAdapter(
                     child: Obx(() {
@@ -123,8 +137,10 @@ class HomePage extends GetView<HomeController> {
                       return const SizedBox.shrink();
                     }),
                   ),
-                  
-                  SliverToBoxAdapter(child: SizedBox(height: isMobile ? 40.h : 80)),
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: isMobile ? 40.h : 80),
+                  ),
                 ],
               );
             },
@@ -155,7 +171,7 @@ class HomePage extends GetView<HomeController> {
   // App Bar
   Widget _buildAppBar(BuildContext context) {
     final authController = Get.find<AuthController>();
-    
+
     return SliverAppBar(
       floating: true,
       snap: true,
@@ -171,11 +187,7 @@ class HomePage extends GetView<HomeController> {
                 gradient: AppTheme.primaryGradient,
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(
-                Icons.local_movies,
-                color: Colors.white,
-                size: 24.sp,
-              ),
+              child: Icon(Icons.local_movies, color: Colors.white, size: 24.sp),
             ),
             SizedBox(width: 12.w),
             Text(
@@ -233,11 +245,27 @@ class HomePage extends GetView<HomeController> {
                     child: CircleAvatar(
                       radius: 18.r,
                       backgroundColor: AppTheme.darkCard,
-                      backgroundImage: authController.currentUser?.userMetadata?['avatar_url'] != null
-                          ? NetworkImage(authController.currentUser!.userMetadata!['avatar_url'])
+                      backgroundImage:
+                          authController
+                                  .currentUser
+                                  ?.userMetadata?['avatar_url'] !=
+                              null
+                          ? NetworkImage(
+                              authController
+                                  .currentUser!
+                                  .userMetadata!['avatar_url'],
+                            )
                           : null,
-                      child: authController.currentUser?.userMetadata?['avatar_url'] == null
-                          ? Icon(Icons.person, size: 20.sp, color: AppTheme.textSecondary)
+                      child:
+                          authController
+                                  .currentUser
+                                  ?.userMetadata?['avatar_url'] ==
+                              null
+                          ? Icon(
+                              Icons.person,
+                              size: 20.sp,
+                              color: AppTheme.textSecondary,
+                            )
                           : null,
                     ),
                   ),
@@ -254,11 +282,17 @@ class HomePage extends GetView<HomeController> {
                   icon: Icon(Icons.login, size: 20.sp),
                   label: Text(
                     'Giriş',
-                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   style: TextButton.styleFrom(
                     foregroundColor: AppTheme.primaryColor,
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 8.h,
+                    ),
                   ),
                 ),
               );
@@ -273,7 +307,7 @@ class HomePage extends GetView<HomeController> {
   // Hero Section - Featured/Trending (Carousel)
   Widget _buildHeroSection(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
-    
+
     return SliverToBoxAdapter(
       child: FadeIn(
         duration: const Duration(milliseconds: 800),
@@ -290,7 +324,7 @@ class HomePage extends GetView<HomeController> {
           ),
           itemBuilder: (context, index, realIndex) {
             final movie = controller.trendingMovies[index];
-            
+
             return Container(
               margin: EdgeInsets.symmetric(horizontal: 8.w),
               child: ClipRRect(
@@ -319,7 +353,7 @@ class HomePage extends GetView<HomeController> {
                         ),
                       ),
                     ),
-                    
+
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -360,7 +394,7 @@ class HomePage extends GetView<HomeController> {
                               ),
                             ),
                             SizedBox(height: 16.h),
-                            
+
                             Text(
                               movie.title ?? 'Başlıksız',
                               style: TextStyle(
@@ -373,18 +407,24 @@ class HomePage extends GetView<HomeController> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             SizedBox(height: 12.h),
-                            
+
                             Row(
                               children: [
                                 StatBadge(
                                   icon: Icons.star,
-                                  value: movie.platformRating?.toStringAsFixed(1) ?? 'N/A',
+                                  value:
+                                      movie.platformRating?.toStringAsFixed(
+                                        1,
+                                      ) ??
+                                      'N/A',
                                   color: AppTheme.secondaryColor,
                                 ),
                                 SizedBox(width: 16.w),
                                 StatBadge(
                                   icon: Icons.calendar_today,
-                                  value: movie.releaseYear,
+                                  value: movie.releaseDate != null
+                                      ? movie.releaseDate!.year.toString()
+                                      : 'N/A',
                                   color: AppTheme.textSecondary,
                                 ),
                                 if (movie.runtime != null) ...[
@@ -398,7 +438,7 @@ class HomePage extends GetView<HomeController> {
                               ],
                             ),
                             SizedBox(height: 16.h),
-                            
+
                             if (movie.overview != null && !isMobile)
                               Text(
                                 movie.overview!,
@@ -411,7 +451,7 @@ class HomePage extends GetView<HomeController> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             if (!isMobile) SizedBox(height: 20.h),
-                            
+
                             Row(
                               children: [
                                 Expanded(
@@ -422,7 +462,9 @@ class HomePage extends GetView<HomeController> {
                                     icon: Icon(Icons.play_arrow, size: 24.sp),
                                     label: const Text('Detaylar'),
                                     style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(vertical: isMobile ? 12.h : 14),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: isMobile ? 12.h : 14,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -432,7 +474,9 @@ class HomePage extends GetView<HomeController> {
                                     // TODO: Add to list
                                   },
                                   style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.all(isMobile ? 12.w : 14),
+                                    padding: EdgeInsets.all(
+                                      isMobile ? 12.w : 14,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12.r),
                                     ),
@@ -482,8 +526,8 @@ class HomePage extends GetView<HomeController> {
                     child: MovieCard(
                       posterPath: movie.fullPosterUrl,
                       title: movie.title ?? 'Başlıksız',
-                      year: movie.releaseYear,
-                      rating: movie.platformRating,
+                      year: movie.releaseDate?.year.toString(),
+                      rating: movie.platformRating!.toDouble(),
                       onTap: () {
                         Get.toNamed('/movie/${movie.id}');
                       },
@@ -527,7 +571,7 @@ class HomePage extends GetView<HomeController> {
                       posterPath: movie.fullPosterUrl,
                       title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
-                      rating: movie.platformRating,
+                      rating: movie.platformRating?.toDouble(),
                       badge: '${movie.commentCount} yorum',
                       onTap: () {
                         Get.toNamed('/movie/${movie.id}');
@@ -572,7 +616,7 @@ class HomePage extends GetView<HomeController> {
                       posterPath: movie.fullPosterUrl,
                       title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
-                      rating: movie.platformRating,
+                      rating: movie.platformRating?.toDouble(),
                       onTap: () {
                         Get.toNamed('/movie/${movie.id}');
                       },
@@ -616,7 +660,7 @@ class HomePage extends GetView<HomeController> {
                       posterPath: movie.fullPosterUrl,
                       title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
-                      rating: movie.platformRating,
+                      rating: movie.platformRating?.toDouble(),
                       badge: '${movie.viewCount} görüntüleme',
                       onTap: () {
                         Get.toNamed('/movie/${movie.id}');
@@ -661,7 +705,7 @@ class HomePage extends GetView<HomeController> {
                       posterPath: movie.fullPosterUrl,
                       title: movie.title ?? 'Başlıksız',
                       year: movie.releaseYear,
-                      rating: movie.platformRating,
+                      rating: movie.platformRating?.toDouble(),
                       onTap: () {
                         Get.toNamed('/movie/${movie.id}');
                       },
@@ -680,13 +724,13 @@ class HomePage extends GetView<HomeController> {
   List<Widget> _buildCategorySections(BuildContext context) {
     final widgets = <Widget>[];
     final isMobile = ResponsiveHelper.isMobile(context);
-    
+
     for (var i = 0; i < controller.categories.length; i++) {
       final category = controller.categories[i];
       final movies = controller.moviesByCategory[category.id];
-      
+
       if (movies == null || movies.isEmpty) continue;
-      
+
       widgets.add(
         SliverToBoxAdapter(
           child: FadeInUp(
@@ -705,7 +749,9 @@ class HomePage extends GetView<HomeController> {
                 SizedBox(
                   height: isMobile ? 280.h : 320,
                   child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 20.w : 64),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 20.w : 64,
+                    ),
                     scrollDirection: Axis.horizontal,
                     itemCount: movies.length,
                     itemBuilder: (context, index) {
@@ -714,7 +760,7 @@ class HomePage extends GetView<HomeController> {
                         posterPath: movie.fullPosterUrl,
                         title: movie.title ?? 'Başlıksız',
                         year: movie.releaseYear,
-                        rating: movie.platformRating,
+                        rating: movie.platformRating?.toDouble(),
                         onTap: () {
                           Get.toNamed('/movie/${movie.id}');
                         },
@@ -728,7 +774,7 @@ class HomePage extends GetView<HomeController> {
         ),
       );
     }
-    
+
     return widgets;
   }
 
@@ -736,10 +782,7 @@ class HomePage extends GetView<HomeController> {
   Widget _buildLoadingState(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar(
-          floating: true,
-          title: Text('CineHub'),
-        ),
+        SliverAppBar(floating: true, title: Text('CineHub')),
         SliverToBoxAdapter(
           child: Column(
             children: [
@@ -760,10 +803,7 @@ class HomePage extends GetView<HomeController> {
                   itemCount: 5,
                   itemBuilder: (context, index) => Padding(
                     padding: EdgeInsets.only(right: 12.w),
-                    child: LoadingShimmer(
-                      width: 140.w,
-                      height: 280.h,
-                    ),
+                    child: LoadingShimmer(width: 140.w, height: 280.h),
                   ),
                 ),
               ),

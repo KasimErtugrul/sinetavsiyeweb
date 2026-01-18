@@ -61,7 +61,7 @@ class MovieDetailController extends GetxController {
     if (movie == null) return;
 
     try {
-      final result = await _movieRepository.toggleWatchlist(movie!.id);
+      final result = await _movieRepository.toggleWatchlist(movie!.id!);
       result.fold(
         (failure) {
           Get.snackbar('Hata', failure.message);
@@ -81,14 +81,14 @@ class MovieDetailController extends GetxController {
     if (movie == null) return;
 
     try {
-      final result = await _movieRepository.toggleMovieLike(movie!.id, isLike);
+      final result = await _movieRepository.toggleMovieLike(movie!.id!, isLike);
       result.fold(
         (failure) {
           Get.snackbar('Hata', failure.message);
         },
         (_) {
           // Like değişti → detayları yenile (istatistikler güncellenir)
-          loadMovieDetail(movie!.id);
+          loadMovieDetail(movie!.id!);
         },
       );
     } catch (e) {
