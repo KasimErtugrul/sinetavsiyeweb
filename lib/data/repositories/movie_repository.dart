@@ -325,6 +325,7 @@ class MovieRepository {
   }
 
   // Search movies
+  // Hiç Çekilmedi
   Future<Either<Failure, List<MovieEntity>>> searchMovies(String query) async {
     try {
       AppLogger.info('Searching movies: $query');
@@ -365,6 +366,7 @@ class MovieRepository {
   }
 
   // Get all categories
+  // Hiç Çekilmedi
   Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
     try {
       AppLogger.info('Fetching categories');

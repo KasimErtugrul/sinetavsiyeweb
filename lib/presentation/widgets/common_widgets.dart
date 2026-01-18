@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive.dart';
 
 // Movie Card Widget
 class MovieCard extends StatelessWidget {
@@ -29,20 +29,29 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardWidth = width ?? 140.w;
-    final cardHeight = height ?? 210.h;
+    final cardWidth = width ?? ResponsiveHelper.getMovieCardWidth(context);
+    final cardHeight = height ?? ResponsiveHelper.getMovieCardHeight(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: cardWidth,
-        margin: EdgeInsets.only(right: 12.w),
+        margin: EdgeInsets.only(
+          right: ResponsiveHelper.getValue(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Poster
             ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(
+                ResponsiveHelper.getBorderRadius(context),
+              ),
               child: Container(
                 width: cardWidth,
                 height: cardHeight,
@@ -62,7 +71,7 @@ class MovieCard extends StatelessWidget {
                         color: AppTheme.darkCard,
                         child: Icon(
                           Icons.movie_outlined,
-                          size: 48.sp,
+                          size: ResponsiveHelper.getIconSize(context, baseSize: 48),
                           color: AppTheme.textTertiary,
                         ),
                       ),
@@ -73,7 +82,12 @@ class MovieCard extends StatelessWidget {
                       left: 0,
                       right: 0,
                       child: Container(
-                        height: 60.h,
+                        height: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 50,
+                          tablet: 60,
+                          desktop: 70,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
@@ -89,30 +103,57 @@ class MovieCard extends StatelessWidget {
                     // Rating badge
                     if (rating != null)
                       Positioned(
-                        top: 8.h,
-                        right: 8.w,
+                        top: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 8,
+                          tablet: 10,
+                          desktop: 12,
+                        ),
+                        right: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 8,
+                          tablet: 10,
+                          desktop: 12,
+                        ),
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
+                            horizontal: ResponsiveHelper.getValue(
+                              context,
+                              mobile: 8,
+                              tablet: 9,
+                              desktop: 10,
+                            ),
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(6.r),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveHelper.getBorderRadius(context, baseRadius: 6),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.star,
-                                size: 14.sp,
+                                size: ResponsiveHelper.getValue(
+                                  context,
+                                  mobile: 12,
+                                  tablet: 13,
+                                  desktop: 14,
+                                ),
                                 color: AppTheme.secondaryColor,
                               ),
-                              SizedBox(width: 4.w),
+                              const SizedBox(width: 4),
                               Text(
                                 rating!.toStringAsFixed(1),
                                 style: TextStyle(
-                                  fontSize: 12.sp,
+                                  fontSize: ResponsiveHelper.getValue(
+                                    context,
+                                    mobile: 11,
+                                    tablet: 12,
+                                    desktop: 13,
+                                  ),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -124,22 +165,49 @@ class MovieCard extends StatelessWidget {
                     // Custom badge (bottom)
                     if (badge != null)
                       Positioned(
-                        bottom: 8.h,
-                        left: 8.w,
-                        right: 8.w,
+                        bottom: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 8,
+                          tablet: 10,
+                          desktop: 12,
+                        ),
+                        left: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 8,
+                          tablet: 10,
+                          desktop: 12,
+                        ),
+                        right: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 8,
+                          tablet: 10,
+                          desktop: 12,
+                        ),
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
+                            horizontal: ResponsiveHelper.getValue(
+                              context,
+                              mobile: 8,
+                              tablet: 9,
+                              desktop: 10,
+                            ),
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryColor.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(6.r),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveHelper.getBorderRadius(context, baseRadius: 6),
+                            ),
                           ),
                           child: Text(
                             badge!,
                             style: TextStyle(
-                              fontSize: 10.sp,
+                              fontSize: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 10,
+                                tablet: 11,
+                                desktop: 12,
+                              ),
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -153,25 +221,42 @@ class MovieCard extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(
+              height: ResponsiveHelper.getValue(
+                context,
+                mobile: 8,
+                tablet: 10,
+                desktop: 12,
+              ),
+            ),
             // Title
             Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: ResponsiveHelper.getValue(
+                  context,
+                  mobile: 13,
+                  tablet: 14,
+                  desktop: 15,
+                ),
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
                 height: 1.3,
               ),
             ),
             if (year != null) ...[
-              SizedBox(height: 4.h),
+              const SizedBox(height: 4),
               Text(
                 year!,
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: ResponsiveHelper.getValue(
+                    context,
+                    mobile: 11,
+                    tablet: 12,
+                    desktop: 13,
+                  ),
                   color: AppTheme.textTertiary,
                 ),
               ),
@@ -201,7 +286,14 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveHelper.getValue(
+          context,
+          mobile: 12,
+          tablet: 14,
+          desktop: 16,
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -210,18 +302,39 @@ class SectionHeader extends StatelessWidget {
               children: [
                 if (icon != null) ...[
                   Container(
-                    padding: EdgeInsets.all(8.w),
+                    padding: EdgeInsets.all(
+                      ResponsiveHelper.getValue(
+                        context,
+                        mobile: 8,
+                        tablet: 10,
+                        desktop: 12,
+                      ),
+                    ),
                     decoration: BoxDecoration(
                       gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveHelper.getBorderRadius(context, baseRadius: 10),
+                      ),
                     ),
                     child: Icon(
                       icon,
-                      size: 20.sp,
+                      size: ResponsiveHelper.getValue(
+                        context,
+                        mobile: 18,
+                        tablet: 20,
+                        desktop: 22,
+                      ),
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(
+                    width: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 12,
+                      tablet: 14,
+                      desktop: 16,
+                    ),
+                  ),
                 ],
                 Expanded(
                   child: Column(
@@ -230,17 +343,22 @@ class SectionHeader extends StatelessWidget {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 24.sp,
+                          fontSize: ResponsiveHelper.getSectionTitleSize(context),
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
                         ),
                       ),
                       if (subtitle != null) ...[
-                        SizedBox(height: 4.h),
+                        const SizedBox(height: 4),
                         Text(
                           subtitle!,
                           style: TextStyle(
-                            fontSize: 14.sp,
+                            fontSize: ResponsiveHelper.getValue(
+                              context,
+                              mobile: 13,
+                              tablet: 14,
+                              desktop: 15,
+                            ),
                             color: AppTheme.textSecondary,
                           ),
                         ),
@@ -260,15 +378,32 @@ class SectionHeader extends StatelessWidget {
                   Text(
                     'Tümünü Gör',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: ResponsiveHelper.getValue(
+                        context,
+                        mobile: 13,
+                        tablet: 14,
+                        desktop: 15,
+                      ),
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(width: 4.w),
+                  SizedBox(
+                    width: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 4,
+                      tablet: 5,
+                      desktop: 6,
+                    ),
+                  ),
                   Icon(
                     Icons.arrow_forward_ios,
-                    size: 14.sp,
+                    size: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 12,
+                      tablet: 13,
+                      desktop: 14,
+                    ),
                     color: AppTheme.primaryColor,
                   ),
                 ],
@@ -303,7 +438,9 @@ class LoadingShimmer extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: AppTheme.darkCard,
-          borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
+          borderRadius: BorderRadius.circular(
+            borderRadius ?? ResponsiveHelper.getBorderRadius(context),
+          ),
         ),
       ),
     );
@@ -331,36 +468,74 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(40.w),
+        padding: EdgeInsets.all(
+          ResponsiveHelper.getValue(
+            context,
+            mobile: 32,
+            tablet: 48,
+            desktop: 64,
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 80.sp,
+              size: ResponsiveHelper.getValue(
+                context,
+                mobile: 72,
+                tablet: 84,
+                desktop: 96,
+              ),
               color: AppTheme.textTertiary,
             ),
-            SizedBox(height: 24.h),
+            SizedBox(
+              height: ResponsiveHelper.getValue(
+                context,
+                mobile: 20,
+                tablet: 24,
+                desktop: 28,
+              ),
+            ),
             Text(
               title,
               style: TextStyle(
-                fontSize: 20.sp,
+                fontSize: ResponsiveHelper.getValue(
+                  context,
+                  mobile: 18,
+                  tablet: 20,
+                  desktop: 22,
+                ),
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 12.h),
+            SizedBox(
+              height: ResponsiveHelper.getValue(
+                context,
+                mobile: 10,
+                tablet: 12,
+                desktop: 14,
+              ),
+            ),
             Text(
               message,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: ResponsiveHelper.getBodyTextSize(context),
                 color: AppTheme.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             if (onAction != null) ...[
-              SizedBox(height: 32.h),
+              SizedBox(
+                height: ResponsiveHelper.getValue(
+                  context,
+                  mobile: 28,
+                  tablet: 32,
+                  desktop: 36,
+                ),
+              ),
               ElevatedButton(
                 onPressed: onAction,
                 child: Text(actionLabel ?? 'Yeniden Dene'),
@@ -416,13 +591,33 @@ class CategoryChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        margin: EdgeInsets.only(right: 8.w),
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveHelper.getValue(
+            context,
+            mobile: 14,
+            tablet: 16,
+            desktop: 18,
+          ),
+          vertical: ResponsiveHelper.getValue(
+            context,
+            mobile: 8,
+            tablet: 9,
+            desktop: 10,
+          ),
+        ),
+        margin: EdgeInsets.only(
+          right: ResponsiveHelper.getValue(
+            context,
+            mobile: 8,
+            tablet: 10,
+            desktop: 12,
+          ),
+        ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? color ?? AppTheme.primaryColor
-              : AppTheme.darkCard,
-          borderRadius: BorderRadius.circular(20.r),
+          color: isSelected ? color ?? AppTheme.primaryColor : AppTheme.darkCard,
+          borderRadius: BorderRadius.circular(
+            ResponsiveHelper.getBorderRadius(context, baseRadius: 20),
+          ),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
@@ -433,7 +628,12 @@ class CategoryChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 13,
+              tablet: 14,
+              desktop: 15,
+            ),
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected ? Colors.white : AppTheme.textPrimary,
           ),
@@ -463,14 +663,24 @@ class StatBadge extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 16.sp,
+          size: ResponsiveHelper.getValue(
+            context,
+            mobile: 14,
+            tablet: 15,
+            desktop: 16,
+          ),
           color: color ?? AppTheme.textSecondary,
         ),
-        SizedBox(width: 4.w),
+        const SizedBox(width: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 12,
+              tablet: 13,
+              desktop: 14,
+            ),
             color: color ?? AppTheme.textSecondary,
             fontWeight: FontWeight.w500,
           ),

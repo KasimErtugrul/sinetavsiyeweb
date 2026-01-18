@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:carousel_slider_plus/carousel_slider_plus.dart';
@@ -39,6 +38,8 @@ class MovieDetailPage extends GetView<MovieDetailController> {
 
   Widget _buildContent(BuildContext context) {
     final movie = controller.movie!;
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return CustomScrollView(
       slivers: [
         _buildAppBar(context),
@@ -46,18 +47,30 @@ class MovieDetailPage extends GetView<MovieDetailController> {
           child: Column(
             children: [
               _buildBackdropSection(context, movie),
-              Center(
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 1200),
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
+              ResponsiveContainer(
+                child: ResponsivePadding(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 48),
-                      _buildMainContent(context, movie),
-                      const SizedBox(height: 60),
-                      _buildCredits(context, movie),
-                      const SizedBox(height: 80),
+                      SizedBox(
+                        height: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 32,
+                          tablet: 40,
+                          desktop: 48,
+                        ),
+                      ),
+                      isMobile
+                          ? _buildMobileContent(context, movie)
+                          : _buildDesktopContent(context, movie),
+                      SizedBox(
+                        height: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 48,
+                          tablet: 64,
+                          desktop: 80,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -72,12 +85,10 @@ class MovieDetailPage extends GetView<MovieDetailController> {
   Widget _buildBackdropSection(BuildContext context, MovieEntity movie) {
     List<String> backdrops = [];
 
-    // Ana backdrop
     if (movie.backdropPath != null) {
       backdrops.add(movie.fullBackdropUrl);
     }
 
-    // Images'tan gelen backdrop'lar
     if (movie.images != null) {
       final imageBackdrops = movie.images!['backdrops'] as List?;
       if (imageBackdrops != null && imageBackdrops.isNotEmpty) {
@@ -92,17 +103,23 @@ class MovieDetailPage extends GetView<MovieDetailController> {
     }
 
     if (backdrops.isEmpty) {
-      backdrops.add(''); // Boş backdrop
+      backdrops.add('');
     }
+
+    final backdropHeight = ResponsiveHelper.getValue(
+      context,
+      mobile: 400.0,
+      tablet: 500.0,
+      desktop: 600.0,
+    );
 
     return Stack(
       children: [
-        // Backdrop Carousel
         SizedBox(
-          height: 600,
+          height: backdropHeight,
           child: CarouselSlider(
             options: CarouselOptions(
-              height: 600,
+              height: backdropHeight,
               viewportFraction: 1.0,
               autoPlay: backdrops.length > 1,
               autoPlayInterval: const Duration(seconds: 5),
@@ -144,18 +161,12 @@ class MovieDetailPage extends GetView<MovieDetailController> {
             }).toList(),
           ),
         ),
-
-        // Header Content Over Carousel
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          child: Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: _buildHeader(context, movie),
-            ),
+          child: ResponsiveContainer(
+            child: ResponsivePadding(child: _buildHeader(context, movie)),
           ),
         ),
       ],
@@ -163,213 +174,583 @@ class MovieDetailPage extends GetView<MovieDetailController> {
   }
 
   Widget _buildAppBar(BuildContext context) {
+    final iconSize = ResponsiveHelper.getValue(
+      context,
+      mobile: 20.0,
+      tablet: 22.0,
+      desktop: 24.0,
+    );
+
     return SliverAppBar(
       floating: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
         icon: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(
+            ResponsiveHelper.getValue(
+              context,
+              mobile: 8,
+              tablet: 9,
+              desktop: 10,
+            ),
+          ),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.6),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+          child: Icon(Icons.arrow_back, color: Colors.white, size: iconSize),
         ),
         onPressed: () => Get.back(),
       ),
       actions: [
         IconButton(
           icon: Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(
+              ResponsiveHelper.getValue(
+                context,
+                mobile: 8,
+                tablet: 9,
+                desktop: 10,
+              ),
+            ),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.6),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.share_outlined,
               color: Colors.white,
-              size: 20,
+              size: iconSize,
             ),
           ),
           onPressed: () {},
         ),
-        const SizedBox(width: 16),
+        SizedBox(
+          width: ResponsiveHelper.getValue(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildHeader(BuildContext context, MovieEntity movie) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 40),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Poster
-          FadeInLeft(
-            child: Container(
-              width: 280,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 30,
-                    offset: const Offset(0, 15),
+      padding: EdgeInsets.only(
+        bottom: ResponsiveHelper.getValue(
+          context,
+          mobile: 24,
+          tablet: 32,
+          desktop: 40,
+        ),
+      ),
+      child: isMobile
+          ? _buildMobileHeader(context, movie)
+          : _buildDesktopHeader(context, movie),
+    );
+  }
+
+  Widget _buildMobileHeader(BuildContext context, MovieEntity movie) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            FadeInLeft(
+              child: Container(
+                width: ResponsiveHelper.getValue(
+                  context,
+                  mobile: 120.0,
+                  tablet: 160.0,
+                  desktop: 180.0,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveHelper.getBorderRadius(context, baseRadius: 8),
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: AspectRatio(
-                  aspectRatio: 2 / 3,
-                  child: Image.network(
-                    movie.fullPosterUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppTheme.darkCard,
-                      child: const Icon(
-                        Icons.movie,
-                        size: 64,
-                        color: AppTheme.textTertiary,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 30,
+                      offset: const Offset(0, 15),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveHelper.getBorderRadius(context, baseRadius: 8),
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 2 / 3,
+                    child: Image.network(
+                      movie.fullPosterUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppTheme.darkCard,
+                        child: Icon(
+                          Icons.movie,
+                          size: ResponsiveHelper.getIconSize(
+                            context,
+                            baseSize: 48,
+                          ),
+                          color: AppTheme.textTertiary,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 60),
-
-          // Info
-          Expanded(
-            child: FadeInRight(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Title
-                  Text(
-                    movie.title ?? '',
-                    style: const TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      height: 1.2,
-                      shadows: [Shadow(color: Colors.black, blurRadius: 20)],
-                    ),
-                  ),
-                  if (movie.originalTitle != null &&
-                      movie.originalTitle != movie.title) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      movie.originalTitle!,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white.withOpacity(0.8),
-                        shadows: const [
-                          Shadow(color: Colors.black, blurRadius: 15),
-                        ],
+            SizedBox(
+              width: ResponsiveHelper.getValue(
+                context,
+                mobile: 16,
+                tablet: 24,
+                desktop: 32,
+              ),
+            ),
+            Expanded(
+              child: FadeInRight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (movie.platformRating != null)
+                      _buildCompactRating(
+                        context,
+                        icon: Icons.star,
+                        value: movie.platformRating!.toStringAsFixed(1),
                       ),
-                    ),
                   ],
-                  const SizedBox(height: 24),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 16,
+            tablet: 20,
+            desktop: 24,
+          ),
+        ),
+        Text(
+          movie.title ?? '',
+          style: TextStyle(
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 24.0,
+              tablet: 32.0,
+              desktop: 42.0,
+            ),
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            height: 1.2,
+          ),
+        ),
+        if (movie.originalTitle != null &&
+            movie.originalTitle != movie.title) ...[
+          SizedBox(
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 6,
+              tablet: 8,
+              desktop: 8,
+            ),
+          ),
+          Text(
+            movie.originalTitle!,
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 14.0,
+                tablet: 16.0,
+                desktop: 20.0,
+              ),
+              color: Colors.white.withOpacity(0.8),
+            ),
+          ),
+        ],
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 12,
+            tablet: 16,
+            desktop: 24,
+          ),
+        ),
+        Wrap(
+          spacing: ResponsiveHelper.getValue(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          ),
+          runSpacing: 8,
+          children: [
+            if (movie.releaseDate != null)
+              Text(
+                movie.releaseYear,
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.getBodyTextSize(context),
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+            if (movie.productionCountries != null &&
+                movie.productionCountries!.isNotEmpty)
+              Text(
+                movie.productionCountries!.first.name ?? '',
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.getBodyTextSize(context),
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+            if (movie.runtime != null)
+              Text(
+                _formatRuntime(movie.runtime!),
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.getBodyTextSize(context),
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+          ],
+        ),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 12,
+            tablet: 16,
+            desktop: 20,
+          ),
+        ),
+        if (movie.genres != null && movie.genres!.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: movie.genres!.map((genre) {
+              return Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveHelper.getValue(
+                    context,
+                    mobile: 10,
+                    tablet: 11,
+                    desktop: 12,
+                  ),
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+                  ),
+                ),
+                child: Text(
+                  genre.name ?? '',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 12.0,
+                      tablet: 13.0,
+                      desktop: 13.0,
+                    ),
+                    color: Colors.white,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 20,
+            tablet: 24,
+            desktop: 32,
+          ),
+        ),
+        _buildActions(context, movie),
+      ],
+    );
+  }
 
-                  // Meta
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 8,
-                    children: [
-                      if (movie.releaseDate != null)
-                        Text(
-                          movie.releaseYear,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      if (movie.productionCountries != null &&
-                          movie.productionCountries!.isNotEmpty)
-                        Text(
-                          movie.productionCountries!.first.name ?? '',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      if (movie.runtime != null)
-                        Text(
-                          _formatRuntime(movie.runtime!),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
+  Widget _buildDesktopHeader(BuildContext context, MovieEntity movie) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        FadeInLeft(
+          child: Container(
+            width: ResponsiveHelper.getValue(
+              context,
+              mobile: 200.0,
+              tablet: 240.0,
+              desktop: 280.0,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(
+                ResponsiveHelper.getBorderRadius(context, baseRadius: 8),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                ResponsiveHelper.getBorderRadius(context, baseRadius: 8),
+              ),
+              child: AspectRatio(
+                aspectRatio: 2 / 3,
+                child: Image.network(
+                  movie.fullPosterUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppTheme.darkCard,
+                    child: Icon(
+                      Icons.movie,
+                      size: ResponsiveHelper.getIconSize(context, baseSize: 64),
+                      color: AppTheme.textTertiary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: ResponsiveHelper.getValue(
+            context,
+            mobile: 40,
+            tablet: 50,
+            desktop: 60,
+          ),
+        ),
+        Expanded(
+          child: FadeInRight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  movie.title ?? '',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 28.0,
+                      tablet: 36.0,
+                      desktop: 42.0,
+                    ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                    shadows: const [
+                      Shadow(color: Colors.black, blurRadius: 20),
                     ],
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Genres
-                  if (movie.genres != null && movie.genres!.isNotEmpty)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: movie.genres!.map((genre) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            genre.name ?? '',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                ),
+                if (movie.originalTitle != null &&
+                    movie.originalTitle != movie.title) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    movie.originalTitle!,
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getValue(
+                        context,
+                        mobile: 16.0,
+                        tablet: 18.0,
+                        desktop: 20.0,
+                      ),
+                      color: Colors.white.withOpacity(0.8),
+                      shadows: const [
+                        Shadow(color: Colors.black, blurRadius: 15),
+                      ],
                     ),
-
-                  const SizedBox(height: 32),
-
-                  // Actions
-                  _buildActions(context, movie),
-
-                  const SizedBox(height: 32),
-
-                  // Ratings
-                  Row(
-                    children: [
-                      if (movie.platformRating != null)
-                        _buildRating(
-                          icon: Icons.star,
-                          value: movie.platformRating!.toStringAsFixed(1),
-                          count: movie.platformRatingCount ?? 0,
-                          label: 'Platform',
-                        ),
-                      if (movie.platformRating != null &&
-                          movie.tmdbVoteAverage != null)
-                        const SizedBox(width: 32),
-                      if (movie.tmdbVoteAverage != null)
-                        _buildRating(
-                          icon: Icons.movie,
-                          value: movie.tmdbVoteAverage!.toStringAsFixed(1),
-                          count: movie.tmdbVoteCount ?? 0,
-                          label: 'TMDb',
-                        ),
-                    ],
                   ),
                 ],
+                SizedBox(
+                  height: ResponsiveHelper.getValue(
+                    context,
+                    mobile: 16,
+                    tablet: 20,
+                    desktop: 24,
+                  ),
+                ),
+                Wrap(
+                  spacing: ResponsiveHelper.getValue(
+                    context,
+                    mobile: 12,
+                    tablet: 14,
+                    desktop: 16,
+                  ),
+                  runSpacing: 8,
+                  children: [
+                    if (movie.releaseDate != null)
+                      Text(
+                        movie.releaseYear,
+                        style: TextStyle(
+                          fontSize: ResponsiveHelper.getBodyTextSize(context),
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    if (movie.productionCountries != null &&
+                        movie.productionCountries!.isNotEmpty)
+                      Text(
+                        movie.productionCountries!.first.name ?? '',
+                        style: TextStyle(
+                          fontSize: ResponsiveHelper.getBodyTextSize(context),
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    if (movie.runtime != null)
+                      Text(
+                        _formatRuntime(movie.runtime!),
+                        style: TextStyle(
+                          fontSize: ResponsiveHelper.getBodyTextSize(context),
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (movie.genres != null && movie.genres!.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: movie.genres!.map((genre) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: ResponsiveHelper.getValue(
+                            context,
+                            mobile: 10,
+                            tablet: 11,
+                            desktop: 12,
+                          ),
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            ResponsiveHelper.getBorderRadius(
+                              context,
+                              baseRadius: 4,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          genre.name ?? '',
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.getValue(
+                              context,
+                              mobile: 12.0,
+                              tablet: 13.0,
+                              desktop: 13.0,
+                            ),
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 32),
+                _buildActions(context, movie),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    if (movie.platformRating != null)
+                      _buildRating(
+                        context,
+                        icon: Icons.star,
+                        value: movie.platformRating!.toStringAsFixed(1),
+                        count: movie.platformRatingCount ?? 0,
+                        label: 'Platform',
+                      ),
+                    if (movie.platformRating != null &&
+                        movie.tmdbVoteAverage != null)
+                      SizedBox(
+                        width: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 24,
+                          tablet: 28,
+                          desktop: 32,
+                        ),
+                      ),
+                    if (movie.tmdbVoteAverage != null)
+                      _buildRating(
+                        context,
+                        icon: Icons.movie,
+                        value: movie.tmdbVoteAverage!.toStringAsFixed(1),
+                        count: movie.tmdbVoteCount ?? 0,
+                        label: 'TMDb',
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactRating(
+    BuildContext context, {
+    required IconData icon,
+    required String value,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: ResponsiveHelper.getValue(
+          context,
+          mobile: 10,
+          tablet: 12,
+          desktop: 14,
+        ),
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context, baseRadius: 6),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: ResponsiveHelper.getValue(
+              context,
+              mobile: 16,
+              tablet: 18,
+              desktop: 20,
+            ),
+            color: AppTheme.secondaryColor,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 16,
+                tablet: 18,
+                desktop: 20,
               ),
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ],
@@ -380,9 +761,17 @@ class MovieDetailPage extends GetView<MovieDetailController> {
   Widget _buildActions(BuildContext context, MovieEntity movie) {
     final authController = Get.find<AuthController>();
 
-    return Row(
+    return Wrap(
+      spacing: ResponsiveHelper.getValue(
+        context,
+        mobile: 8,
+        tablet: 10,
+        desktop: 12,
+      ),
+      runSpacing: 8,
       children: [
         _buildActionButton(
+          context,
           icon: Icons.thumb_up_outlined,
           label: 'Beğen',
           count: movie.likeCount,
@@ -392,8 +781,8 @@ class MovieDetailPage extends GetView<MovieDetailController> {
             }
           },
         ),
-        const SizedBox(width: 12),
         _buildActionButton(
+          context,
           icon: Icons.bookmark_border,
           label: 'İzlenecek',
           count: movie.watchlistCount,
@@ -403,8 +792,8 @@ class MovieDetailPage extends GetView<MovieDetailController> {
             }
           },
         ),
-        const SizedBox(width: 12),
         _buildActionButton(
+          context,
           icon: Icons.list_outlined,
           label: 'Liste',
           count: movie.listCount,
@@ -414,7 +803,8 @@ class MovieDetailPage extends GetView<MovieDetailController> {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildActionButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
     int? count,
@@ -422,28 +812,74 @@ class MovieDetailPage extends GetView<MovieDetailController> {
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(
+        ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+      ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveHelper.getValue(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          ),
+          vertical: ResponsiveHelper.getValue(
+            context,
+            mobile: 8,
+            tablet: 9,
+            desktop: 10,
+          ),
+        ),
         decoration: BoxDecoration(
           border: Border.all(color: AppTheme.textTertiary.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(
+            ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: AppTheme.textPrimary),
-            const SizedBox(width: 8),
+            Icon(
+              icon,
+              size: ResponsiveHelper.getValue(
+                context,
+                mobile: 16,
+                tablet: 17,
+                desktop: 18,
+              ),
+              color: AppTheme.textPrimary,
+            ),
+            SizedBox(
+              width: ResponsiveHelper.getValue(
+                context,
+                mobile: 6,
+                tablet: 7,
+                desktop: 8,
+              ),
+            ),
             Text(
               label,
-              style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+              style: TextStyle(
+                fontSize: ResponsiveHelper.getValue(
+                  context,
+                  mobile: 13,
+                  tablet: 14,
+                  desktop: 14,
+                ),
+                color: AppTheme.textPrimary,
+              ),
             ),
             if (count != null && count > 0) ...[
               const SizedBox(width: 6),
               Text(
                 _formatCount(count),
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: ResponsiveHelper.getValue(
+                    context,
+                    mobile: 12,
+                    tablet: 13,
+                    desktop: 13,
+                  ),
                   color: AppTheme.textSecondary.withOpacity(0.7),
                 ),
               ),
@@ -454,7 +890,8 @@ class MovieDetailPage extends GetView<MovieDetailController> {
     );
   }
 
-  Widget _buildRating({
+  Widget _buildRating(
+    BuildContext context, {
     required IconData icon,
     required String value,
     required int count,
@@ -465,15 +902,29 @@ class MovieDetailPage extends GetView<MovieDetailController> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppTheme.secondaryColor),
+            Icon(
+              icon,
+              size: ResponsiveHelper.getValue(
+                context,
+                mobile: 18,
+                tablet: 19,
+                desktop: 20,
+              ),
+              color: AppTheme.secondaryColor,
+            ),
             const SizedBox(width: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
+              style: TextStyle(
+                fontSize: ResponsiveHelper.getValue(
+                  context,
+                  mobile: 20,
+                  tablet: 22,
+                  desktop: 24,
+                ),
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                shadows: [Shadow(color: Colors.black, blurRadius: 10)],
+                shadows: const [Shadow(color: Colors.black, blurRadius: 10)],
               ),
             ),
           ],
@@ -481,104 +932,236 @@ class MovieDetailPage extends GetView<MovieDetailController> {
         const SizedBox(height: 4),
         Text(
           '$label · ${_formatCount(count)} oy',
-          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 11,
+              tablet: 12,
+              desktop: 12,
+            ),
+            color: Colors.white.withOpacity(0.8),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildMainContent(BuildContext context, MovieEntity movie) {
-    return Row(
+  Widget _buildMobileContent(BuildContext context, MovieEntity movie) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Tagline
-              if (movie.tagline != null && movie.tagline!.isNotEmpty) ...[
-                Text(
-                  movie.tagline!,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontStyle: FontStyle.italic,
-                    color: AppTheme.textSecondary.withOpacity(0.9),
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Overview
-              if (movie.overview != null && movie.overview!.isNotEmpty) ...[
-                Text(
-                  movie.overview!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textSecondary,
-                    height: 1.7,
-                  ),
-                ),
-                const SizedBox(height: 40),
-              ],
-
-              // Stats
-              _buildStats(context, movie),
-            ],
+        if (movie.tagline != null && movie.tagline!.isNotEmpty) ...[
+          Text(
+            movie.tagline!,
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 15,
+                tablet: 16,
+                desktop: 18,
+              ),
+              fontStyle: FontStyle.italic,
+              color: AppTheme.textSecondary.withOpacity(0.9),
+              height: 1.5,
+            ),
+          ),
+          SizedBox(
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 16,
+              tablet: 20,
+              desktop: 24,
+            ),
+          ),
+        ],
+        if (movie.overview != null && movie.overview!.isNotEmpty) ...[
+          Text(
+            movie.overview!,
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getBodyTextSize(context),
+              color: AppTheme.textSecondary,
+              height: 1.7,
+            ),
+          ),
+          SizedBox(
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 24,
+              tablet: 32,
+              desktop: 40,
+            ),
+          ),
+        ],
+        _buildStats(context, movie),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 24,
+            tablet: 32,
+            desktop: 40,
           ),
         ),
-        const SizedBox(width: 60),
+        _buildSidebar(context, movie),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 32,
+            tablet: 40,
+            desktop: 48,
+          ),
+        ),
+        _buildCredits(context, movie),
+      ],
+    );
+  }
 
-        // Sidebar
-        SizedBox(width: 280, child: _buildSidebar(context, movie)),
+  Widget _buildDesktopContent(BuildContext context, MovieEntity movie) {
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (movie.tagline != null && movie.tagline!.isNotEmpty) ...[
+                    Text(
+                      movie.tagline!,
+                      style: TextStyle(
+                        fontSize: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 16,
+                          tablet: 17,
+                          desktop: 18,
+                        ),
+                        fontStyle: FontStyle.italic,
+                        color: AppTheme.textSecondary.withOpacity(0.9),
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (movie.overview != null && movie.overview!.isNotEmpty) ...[
+                    Text(
+                      movie.overview!,
+                      style: TextStyle(
+                        fontSize: ResponsiveHelper.getBodyTextSize(context),
+                        color: AppTheme.textSecondary,
+                        height: 1.7,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                  _buildStats(context, movie),
+                ],
+              ),
+            ),
+            SizedBox(
+              width: ResponsiveHelper.getValue(
+                context,
+                mobile: 40,
+                tablet: 50,
+                desktop: 60,
+              ),
+            ),
+            SizedBox(
+              width: ResponsiveHelper.getValue(
+                context,
+                mobile: 220.0,
+                tablet: 250.0,
+                desktop: 280.0,
+              ),
+              child: _buildSidebar(context, movie),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 48,
+            tablet: 56,
+            desktop: 64,
+          ),
+        ),
+        _buildCredits(context, movie),
       ],
     );
   }
 
   Widget _buildStats(BuildContext context, MovieEntity movie) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(
+        ResponsiveHelper.getValue(context, mobile: 20, tablet: 22, desktop: 24),
+      ),
       decoration: BoxDecoration(
         border: Border.all(color: AppTheme.textTertiary.withOpacity(0.2)),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'İstatistikler',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 15,
+                tablet: 16,
+                desktop: 16,
+              ),
               fontWeight: FontWeight.w600,
               color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(height: 20),
-          _buildStatRow('Görüntülenme', movie.viewCount ?? 0),
+          SizedBox(
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 16,
+              tablet: 18,
+              desktop: 20,
+            ),
+          ),
+          _buildStatRow(context, 'Görüntülenme', movie.viewCount ?? 0),
           const SizedBox(height: 12),
-          _buildStatRow('Yorum', movie.commentCount ?? 0),
+          _buildStatRow(context, 'Yorum', movie.commentCount ?? 0),
           const SizedBox(height: 12),
-          _buildStatRow('Beğeni', movie.likeCount ?? 0),
+          _buildStatRow(context, 'Beğeni', movie.likeCount ?? 0),
           const SizedBox(height: 12),
-          _buildStatRow('Beğenmeme', movie.dislikeCount ?? 0),
+          _buildStatRow(context, 'Beğenmeme', movie.dislikeCount ?? 0),
         ],
       ),
     );
   }
 
-  Widget _buildStatRow(String label, int value) {
+  Widget _buildStatRow(BuildContext context, String label, int value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+          style: TextStyle(
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 13,
+              tablet: 14,
+              desktop: 14,
+            ),
+            color: AppTheme.textSecondary,
+          ),
         ),
         Text(
           _formatCount(value),
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 13,
+              tablet: 14,
+              desktop: 14,
+            ),
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
           ),
@@ -592,37 +1175,55 @@ class MovieDetailPage extends GetView<MovieDetailController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSidebarSection(
+          context,
           title: 'Detaylar',
           items: [
             if (movie.releaseDate != null)
               _buildDetailItem(
+                context,
                 'Yayın Tarihi',
                 movie.releaseDate!.toString().split(' ')[0],
               ),
             if (movie.runtime != null)
-              _buildDetailItem('Süre', '${movie.runtime} dakika'),
+              _buildDetailItem(context, 'Süre', '${movie.runtime} dakika'),
             if (movie.spokenLanguages != null &&
                 movie.spokenLanguages!.isNotEmpty)
               _buildDetailItem(
+                context,
                 'Dil',
                 movie.spokenLanguages!.map((l) => l.name ?? '').join(', '),
               ),
-            if (movie.imdbId != null) _buildDetailItem('IMDb', movie.imdbId!),
+            if (movie.imdbId != null)
+              _buildDetailItem(context, 'IMDb', movie.imdbId!),
             if (movie.tmdbPopularity != null)
               _buildDetailItem(
+                context,
                 'Popülerlik',
                 movie.tmdbPopularity!.toStringAsFixed(1),
               ),
           ],
         ),
-        const SizedBox(height: 32),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 24,
+            tablet: 28,
+            desktop: 32,
+          ),
+        ),
         if (movie.categoryName != null)
           _buildSidebarSection(
+            context,
             title: 'Kategori',
             items: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveHelper.getValue(
+                    context,
+                    mobile: 10,
+                    tablet: 11,
+                    desktop: 12,
+                  ),
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
@@ -633,12 +1234,19 @@ class MovieDetailPage extends GetView<MovieDetailController> {
                           ),
                         )
                       : AppTheme.primaryColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+                  ),
                 ),
                 child: Text(
                   movie.categoryName!,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 12,
+                      tablet: 13,
+                      desktop: 13,
+                    ),
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
@@ -650,7 +1258,8 @@ class MovieDetailPage extends GetView<MovieDetailController> {
     );
   }
 
-  Widget _buildSidebarSection({
+  Widget _buildSidebarSection(
+    BuildContext context, {
     required String title,
     required List<Widget> items,
   }) {
@@ -659,20 +1268,32 @@ class MovieDetailPage extends GetView<MovieDetailController> {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: ResponsiveHelper.getValue(
+              context,
+              mobile: 13,
+              tablet: 14,
+              desktop: 14,
+            ),
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
             letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(
+          height: ResponsiveHelper.getValue(
+            context,
+            mobile: 14,
+            tablet: 15,
+            desktop: 16,
+          ),
+        ),
         ...items,
       ],
     );
   }
 
-  Widget _buildDetailItem(String label, String value) {
+  Widget _buildDetailItem(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -681,14 +1302,27 @@ class MovieDetailPage extends GetView<MovieDetailController> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 11,
+                tablet: 12,
+                desktop: 12,
+              ),
               color: AppTheme.textSecondary.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 13,
+                tablet: 14,
+                desktop: 14,
+              ),
+              color: AppTheme.textPrimary,
+            ),
           ),
         ],
       ),
@@ -708,17 +1342,34 @@ class MovieDetailPage extends GetView<MovieDetailController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Oyuncular',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 20,
+                tablet: 22,
+                desktop: 24,
+              ),
               fontWeight: FontWeight.bold,
               color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(height: 24),
           SizedBox(
-            height: 240,
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 20,
+              tablet: 22,
+              desktop: 24,
+            ),
+          ),
+          SizedBox(
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 220.0,
+              tablet: 230.0,
+              desktop: 240.0,
+            ),
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(context).copyWith(
                 dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse},
@@ -731,7 +1382,7 @@ class MovieDetailPage extends GetView<MovieDetailController> {
                 itemCount: cast.length > 12 ? 12 : cast.length,
                 itemBuilder: (context, index) {
                   final person = cast[index];
-                  return _buildCastCard(person);
+                  return _buildCastCard(context, person);
                 },
               ),
             ),
@@ -743,51 +1394,95 @@ class MovieDetailPage extends GetView<MovieDetailController> {
     }
   }
 
-  Widget _buildCastCard(Map<String, dynamic> person) {
+  Widget _buildCastCard(BuildContext context, Map<String, dynamic> person) {
     final profilePath = person['profile_path'];
     final imageUrl = profilePath != null
         ? 'https://image.tmdb.org/t/p/w185$profilePath'
         : null;
 
+    final cardWidth = ResponsiveHelper.getValue(
+      context,
+      mobile: 130.0,
+      tablet: 135.0,
+      desktop: 140.0,
+    );
+    final cardHeight = ResponsiveHelper.getValue(
+      context,
+      mobile: 170.0,
+      tablet: 175.0,
+      desktop: 180.0,
+    );
+
     return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 16),
+      width: cardWidth,
+      margin: EdgeInsets.only(
+        right: ResponsiveHelper.getValue(
+          context,
+          mobile: 12,
+          tablet: 14,
+          desktop: 16,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 180,
+            height: cardHeight,
             decoration: BoxDecoration(
               color: AppTheme.darkCard,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(
+                ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+              ),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(
+                ResponsiveHelper.getBorderRadius(context, baseRadius: 4),
+              ),
               child: imageUrl != null
                   ? Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.person,
-                        size: 48,
-                        color: AppTheme.textTertiary,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Icon(
+                          Icons.person,
+                          size: ResponsiveHelper.getIconSize(
+                            context,
+                            baseSize: 48,
+                          ),
+                          color: AppTheme.textTertiary,
+                        ),
                       ),
                     )
-                  : const Center(
+                  : Center(
                       child: Icon(
                         Icons.person,
-                        size: 48,
+                        size: ResponsiveHelper.getIconSize(
+                          context,
+                          baseSize: 48,
+                        ),
                         color: AppTheme.textTertiary,
                       ),
                     ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(
+            height: ResponsiveHelper.getValue(
+              context,
+              mobile: 6,
+              tablet: 7,
+              desktop: 8,
+            ),
+          ),
           Text(
             person['name'] ?? '',
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 13,
+                tablet: 14,
+                desktop: 14,
+              ),
               fontWeight: FontWeight.w600,
               color: AppTheme.textPrimary,
             ),
@@ -798,7 +1493,12 @@ class MovieDetailPage extends GetView<MovieDetailController> {
           Text(
             person['character'] ?? '',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: ResponsiveHelper.getValue(
+                context,
+                mobile: 11,
+                tablet: 12,
+                desktop: 12,
+              ),
               color: AppTheme.textSecondary.withOpacity(0.7),
             ),
             maxLines: 2,
@@ -810,31 +1510,106 @@ class MovieDetailPage extends GetView<MovieDetailController> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
+    final cardWidth = ResponsiveHelper.getValue(
+      context,
+      mobile: 200.0,
+      tablet: 240.0,
+      desktop: 280.0,
+    );
+    final cardHeight = cardWidth * 1.5;
+
     return CustomScrollView(
       slivers: [
         _buildAppBar(context),
         SliverToBoxAdapter(
-          child: Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: ResponsiveContainer(
+            child: ResponsivePadding(
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  SizedBox(
+                    height: ResponsiveHelper.getValue(
+                      context,
+                      mobile: 32,
+                      tablet: 36,
+                      desktop: 40,
+                    ),
+                  ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      LoadingShimmer(width: 280, height: 420, borderRadius: 8),
-                      const SizedBox(width: 60),
+                      LoadingShimmer(
+                        width: cardWidth,
+                        height: cardHeight,
+                        borderRadius: ResponsiveHelper.getBorderRadius(
+                          context,
+                          baseRadius: 8,
+                        ),
+                      ),
+                      SizedBox(
+                        width: ResponsiveHelper.getValue(
+                          context,
+                          mobile: 24,
+                          tablet: 40,
+                          desktop: 60,
+                        ),
+                      ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            LoadingShimmer(width: 400, height: 40),
-                            const SizedBox(height: 16),
-                            LoadingShimmer(width: 300, height: 20),
-                            const SizedBox(height: 32),
-                            LoadingShimmer(width: double.infinity, height: 200),
+                            LoadingShimmer(
+                              width: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 250.0,
+                                tablet: 350.0,
+                                desktop: 400.0,
+                              ),
+                              height: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 32,
+                                tablet: 36,
+                                desktop: 40,
+                              ),
+                            ),
+                            SizedBox(
+                              height: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 12,
+                                tablet: 14,
+                                desktop: 16,
+                              ),
+                            ),
+                            LoadingShimmer(
+                              width: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 200.0,
+                                tablet: 250.0,
+                                desktop: 300.0,
+                              ),
+                              height: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 16,
+                                tablet: 18,
+                                desktop: 20,
+                              ),
+                            ),
+                            SizedBox(
+                              height: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 24,
+                                tablet: 28,
+                                desktop: 32,
+                              ),
+                            ),
+                            LoadingShimmer(
+                              width: double.infinity,
+                              height: ResponsiveHelper.getValue(
+                                context,
+                                mobile: 150.0,
+                                tablet: 180.0,
+                                desktop: 200.0,
+                              ),
+                            ),
                           ],
                         ),
                       ),
